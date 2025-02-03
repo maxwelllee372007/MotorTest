@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -19,6 +20,11 @@ public class Robot extends TimedRobot {
 
   public Robot() {
     m_motor = new TalonFX(kMotorPort);
+    var talonFXConfigurator = m_motor.getConfigurator();
+    var limitConfigs = new CurrentLimitsConfigs();
+    limitConfigs.StatorCurrentLimit = 60;
+    limitConfigs.StatorCurrentLimitEnable = true;
+    talonFXConfigurator.apply(limitConfigs);
     SignalLogger.setPath("/media/sda11/");
     SignalLogger.enableAutoLogging(true);
     
