@@ -4,14 +4,10 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 
 public class Robot extends TimedRobot {
@@ -19,9 +15,14 @@ public class Robot extends TimedRobot {
 
 
   private final TalonFX m_motor;
+  private boolean m_toggle = true;
 
   public Robot() {
     m_motor = new TalonFX(kMotorPort);
+    SignalLogger.setPath("/media/sda11/");
+    SignalLogger.enableAutoLogging(true);
+    
+
   }
 
   /*
@@ -30,11 +31,35 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    // Set the logger to log to the first flashdrive plugged in
+
+// Explicitly start the logger
+SignalLogger.start();
+
+
   }
 
   /** The teleop periodic function is called every control packet in teleop. */
   @Override
   public void teleopPeriodic() {
-    m_motor.setControl(new VoltageOut(12));
+    if (m_toggle) {
+      m_motor.setControl(new VoltageOut(12));
+    } else {
+      m_motor.setControl(new VoltageOut(0));
+    }
+    SignalLogger.writeDouble("position", m_motor.getPosition().getValueAsDouble());
+    SignalLogger.writeDouble("veloicty", m_motor.getVelocity().getValueAsDouble());
+    SignalLogger.writeDouble("acceleration", m_motor.getAcceleration().getValueAsDouble());
+    SignalLogger.writeDouble("voltage", m_motor.getMotorVoltage().getValueAsDouble());
+    if (Math.abs(m_motor.getVelocity().getValueAsDouble()) > 10.0) {
+      m_toggle = false;
+    }
   }
+
+  // @Override
+  // public void end() {
+  //   // Explicitly stop logging
+  //   // If the user does not call stop(), then it's possible to lose the last few seconds of data
+  //   SignalLogger.stop();
+  // }
 }
