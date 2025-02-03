@@ -8,6 +8,8 @@ import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 
 
@@ -20,11 +22,15 @@ public class Robot extends TimedRobot {
 
   public Robot() {
     m_motor = new TalonFX(kMotorPort);
+
     var talonFXConfigurator = m_motor.getConfigurator();
     var limitConfigs = new CurrentLimitsConfigs();
     limitConfigs.StatorCurrentLimit = 60;
     limitConfigs.StatorCurrentLimitEnable = true;
     talonFXConfigurator.apply(limitConfigs);
+    
+    m_motor.setNeutralMode(NeutralModeValue.Coast);
+
     SignalLogger.setPath("/media/sda11/");
     SignalLogger.enableAutoLogging(true);
     
@@ -51,15 +57,17 @@ SignalLogger.start();
     if (m_toggle) {
       m_motor.setControl(new VoltageOut(12));
     } else {
-      m_motor.setControl(new VoltageOut(0));
+      m_motor.stopMotor();
     }
+    
+    if (Math.abs(m_motor.getVelocity().getValueAsDouble()) > 10.0) {
+      m_toggle = false;
+    }
+
     SignalLogger.writeDouble("position", m_motor.getPosition().getValueAsDouble());
     SignalLogger.writeDouble("veloicty", m_motor.getVelocity().getValueAsDouble());
     SignalLogger.writeDouble("acceleration", m_motor.getAcceleration().getValueAsDouble());
     SignalLogger.writeDouble("voltage", m_motor.getMotorVoltage().getValueAsDouble());
-    if (Math.abs(m_motor.getVelocity().getValueAsDouble()) > 10.0) {
-      m_toggle = false;
-    }
   }
 
   // @Override
