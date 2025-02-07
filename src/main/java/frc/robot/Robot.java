@@ -22,7 +22,7 @@ public class Robot extends TimedRobot {
   private final TalonFX m_motor;
   private boolean m_toggle = true;
   private double voltageOut = 2; // Volts
-  private double maxSpeed = 2000; // RPM
+  private double maxSpeed = 900; // RPM
   private ShuffleboardTab tuningTab = Shuffleboard.getTab("Tuning");
 
 
@@ -47,7 +47,10 @@ public class Robot extends TimedRobot {
    * robot mode.
    */
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+    // voltageOut = tuningTab.add("Voltage Out", voltageOut).getEntry().getDouble(voltageOut);
+    // maxSpeed = tuningTab.add("Max Speed", maxSpeed).getEntry().getDouble(maxSpeed);
+  }
 
 
   @Override
@@ -60,11 +63,11 @@ public class Robot extends TimedRobot {
   /** The teleop periodic function is called every control packet in teleop. */
   @Override
   public void teleopPeriodic() {
-    voltageOut = tuningTab.add("Voltage Out", voltageOut).getEntry().getDouble(voltageOut);
-    maxSpeed = tuningTab.add("Max Speed", maxSpeed).getEntry().getDouble(maxSpeed);
+
 
     if (m_toggle) {
       m_motor.setControl(new VoltageOut(voltageOut));
+      // logOutput();
     } else {
       m_motor.stopMotor();
     }
