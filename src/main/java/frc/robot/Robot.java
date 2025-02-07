@@ -12,6 +12,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
 
 public class Robot extends TimedRobot {
@@ -22,6 +23,8 @@ public class Robot extends TimedRobot {
   private boolean m_toggle = true;
   private double voltageOut = 2; // Volts
   private double maxSpeed = 2000; // RPM
+  private ShuffleboardTab tuningTab = Shuffleboard.getTab("Tuning");
+
 
   public Robot() {
     m_motor = new TalonFX(kMotorPort);
@@ -45,44 +48,41 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {}
+
+
   @Override
   public void teleopInit() {
     m_toggle = true;
     SignalLogger.start();
     SignalLogger.enableAutoLogging(true);
-
   }
 
   /** The teleop periodic function is called every control packet in teleop. */
   @Override
   public void teleopPeriodic() {
+    voltageOut = tuningTab.add("Voltage Out", voltageOut).getEntry().getDouble(voltageOut);
+    maxSpeed = tuningTab.add("Max Speed", maxSpeed).getEntry().getDouble(maxSpeed);
 
-    voltageOut = Shuffleboard.getTab("Tuning").add("Voltage Out", voltageOut).getEntry().getDouble(voltageOut);
-    maxSpeed = Shuffleboard.getTab("Tuning").add("Max Speed", maxSpeed).getEntry().getDouble(maxSpeed);
     if (m_toggle) {
       m_motor.setControl(new VoltageOut(voltageOut));
     } else {
       m_motor.stopMotor();
     }
-    
     if (Math.abs(m_motor.getVelocity().getValueAsDouble()) > maxSpeed/60) {
       m_toggle = false;
       SignalLogger.stop();
     }
-
   }
-  private void log() {
+  
+  private void logOutput() {
+    SignalLogger.writeDouble("voltageOut", voltageOut);
+    SignalLogger.writeDouble("maxSpeed", maxSpeed);
+  }
+
+  private void logMotor() {
     SignalLogger.writeDouble("position", m_motor.getPosition().getValueAsDouble());
     SignalLogger.writeDouble("veloicty", m_motor.getVelocity().getValueAsDouble());
     SignalLogger.writeDouble("acceleration", m_motor.getAcceleration().getValueAsDouble());
     SignalLogger.writeDouble("voltage", m_motor.getMotorVoltage().getValueAsDouble());
-
   }
-
-  // @Override
-  // public void end() {
-  //   // Explicitly stop logging
-  //   // If the user does not call stop(), then it's possible to lose the last few seconds of data
-  //   SignalLogger.stop();
-  // }
 }
